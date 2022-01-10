@@ -560,7 +560,6 @@ class TestOperators(TestCase):
         xfail('__getitem__', ''),
         xfail('index_put'),
         xfail('lu_solve'),
-        xfail('nn.functional.instance_norm'),
     })
 
     @ops(functorch_lagging_op_db + additional_op_db, allowed_dtypes=(torch.float,))
@@ -826,7 +825,6 @@ class TestOperators(TestCase):
         xfail('nn.functional.gaussian_nll_loss'),
         xfail('nn.functional.hardsigmoid'),
         xfail('nn.functional.huber_loss'),
-        xfail('nn.functional.instance_norm'),
         xfail('nn.functional.poisson_nll_loss'),
         xfail('nn.functional.bilinear'),
         xfail('nn.functional.prelu'),
@@ -918,7 +916,8 @@ class TestOperators(TestCase):
             return
 
         samples = op.sample_inputs(device, dtype, requires_grad=True)
-        is_batch_norm = op.name == "nn.functional.batch_norm"
+        batch_norm_fns = ("nn.functional.batch_norm", "nn.functional.instance_norm")  # instance norm calls batch norm
+        is_batch_norm = op.name in batch_norm_fns
 
         for sample in samples:
             args = [sample.input] + list(sample.args)
