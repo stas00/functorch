@@ -277,3 +277,24 @@ def _s_where_canonicalization(a, b, c):
 @register_decomposition(aten.detach)
 def detach_decomposition(x):
     return x
+
+
+@register_decomposition(aten.std)
+def std_decomposition(x, dim, correction=False, keepdim=False):
+    n = x.numel()
+    if correction:
+        n = n - 1
+    if dim is None:
+        mean = aten.mean(x)
+    else:
+        mean = aten.mean(x, dim, keepdim)
+
+    sub = x - mean
+    sq = sub * sub
+
+    if dim is None:
+        sum = aten.sum(sq)
+    else:
+        sum = aten.sum(sq, dim, keepdim)
+
+    return aten.sqrt(sum / n)
